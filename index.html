@@ -1,11 +1,934 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Body Fuel — Health Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f2ec;
+  --card:#ffffff;
+  --ink:#1a1a1a;
+  --muted:#8a8a8a;
+  --border:#e0dbd2;
+  --green:#2d6a4f;
+  --green-light:#d8f3dc;
+  --orange:#e76f51;
+  --orange-light:#fde8e2;
+  --blue:#264653;
+  --yellow:#e9c46a;
+  --yellow-light:#fdf3d7;
+  --red:#c1121f;
+}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inconsolata',monospace;
+  min-height:100vh;
+  padding:2rem 1rem 4rem;
+}
+/* Background pattern */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:radial-gradient(circle, #c8c0b0 1px, transparent 1px);
+  background-size:28px 28px;
+  opacity:0.35;
+  pointer-events:none;
+  z-index:0;
+}
+.wrap{
+  max-width:820px;
+  margin:0 auto;
+  position:relative;
+  z-index:1;
+}
+
+/* Header */
+header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:3rem;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+.brand{
+  font-family:'Syne',sans-serif;
+  font-size:2.4rem;
+  font-weight:800;
+  line-height:1;
+  color:var(--ink);
+  letter-spacing:-0.03em;
+}
+.brand span{color:var(--green);}
+.tagline{
+  font-size:0.72rem;
+  color:var(--muted);
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  margin-top:0.3rem;
+}
+.badge{
+  font-size:0.65rem;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  background:var(--ink);
+  color:var(--bg);
+  padding:0.4rem 0.9rem;
+  border-radius:2px;
+  align-self:center;
+}
+
+/* Tabs */
+.tabs{
+  display:flex;
+  gap:0;
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+  margin-bottom:2rem;
+  background:var(--card);
+}
+.tab-btn{
+  flex:1;
+  background:transparent;
+  border:none;
+  font-family:'Syne',sans-serif;
+  font-size:0.78rem;
+  font-weight:600;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  padding:0.9rem 0.5rem;
+  cursor:pointer;
+  color:var(--muted);
+  transition:all 0.2s;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.tab-btn:last-child{border-right:none;}
+.tab-btn.active{
+  background:var(--ink);
+  color:var(--bg);
+}
+.tab-btn:hover:not(.active){background:var(--border);}
+
+/* Panels */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* Card */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:2rem;
+  margin-bottom:1.5rem;
+}
+.card-title{
+  font-family:'Syne',sans-serif;
+  font-size:1rem;
+  font-weight:700;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  margin-bottom:1.5rem;
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+}
+.card-title .dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--green);
+  display:inline-block;
+}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem;}
+@media(max-width:560px){
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+}
+
+/* Fields */
+.field{display:flex;flex-direction:column;gap:0.4rem;}
+.field label{
+  font-size:0.65rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.field input,.field select{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:3px;
+  color:var(--ink);
+  font-family:'Inconsolata',monospace;
+  font-size:1rem;
+  padding:0.65rem 0.8rem;
+  outline:none;
+  transition:border-color 0.18s;
+  -moz-appearance:textfield;
+  appearance:auto;
+}
+.field input::-webkit-outer-spin-button,
+.field input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.field input:focus,.field select:focus{border-color:var(--green);}
+
+/* Toggle pills */
+.pills{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.pill{
+  font-family:'Inconsolata',monospace;
+  font-size:0.8rem;
+  border:1px solid var(--border);
+  border-radius:30px;
+  padding:0.4rem 1rem;
+  cursor:pointer;
+  background:transparent;
+  color:var(--muted);
+  transition:all 0.18s;
+}
+.pill.active,.pill:hover{
+  background:var(--ink);
+  color:var(--bg);
+  border-color:var(--ink);
+}
+
+/* Calc Button */
+.calc-btn{
+  width:100%;
+  background:var(--green);
+  color:#fff;
+  border:none;
+  border-radius:3px;
+  font-family:'Syne',sans-serif;
+  font-size:0.8rem;
+  font-weight:700;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  padding:1rem;
+  cursor:pointer;
+  transition:background 0.2s, transform 0.1s;
+  margin-top:1.5rem;
+}
+.calc-btn:hover{background:#245c42;}
+.calc-btn:active{transform:scale(0.98);}
+
+/* Results */
+.results{display:none;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;}
+.results.show{display:block;}
+@keyframes popIn{
+  from{opacity:0;transform:scale(0.95);}
+  to{opacity:1;transform:scale(1);}
+}
+
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.result-box{
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1.2rem 1rem;
+  background:var(--bg);
+  position:relative;
+  overflow:hidden;
+}
+.result-box::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+}
+.result-box.green::before{background:var(--green);}
+.result-box.orange::before{background:var(--orange);}
+.result-box.blue::before{background:var(--blue);}
+.result-box.yellow::before{background:var(--yellow);}
+
+.rb-label{
+  font-size:0.6rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:0.4rem;
+}
+.rb-val{
+  font-family:'Syne',sans-serif;
+  font-size:2rem;
+  font-weight:800;
+  line-height:1;
+  color:var(--ink);
+}
+.rb-unit{font-size:0.75rem;color:var(--muted);font-family:'Inconsolata',monospace;margin-top:0.2rem;}
+
+/* BMI bar */
+.bmi-bar-wrap{margin:1.5rem 0 0.5rem;}
+.bmi-bar-track{
+  height:10px;
+  border-radius:10px;
+  background:linear-gradient(90deg,#52b788 0%,#95d5b2 25%,#e9c46a 50%,#f4a261 75%,#e76f51 100%);
+  position:relative;
+  margin-bottom:0.5rem;
+}
+.bmi-needle{
+  position:absolute;
+  top:-5px;
+  width:20px;height:20px;
+  background:var(--ink);
+  border:2px solid #fff;
+  border-radius:50%;
+  transform:translateX(-50%);
+  transition:left 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.bmi-labels{
+  display:flex;
+  justify-content:space-between;
+  font-size:0.58rem;
+  color:var(--muted);
+  letter-spacing:0.07em;
+}
+
+/* Macro bars */
+.macro-row{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  margin-bottom:0.8rem;
+}
+.macro-name{width:80px;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+.macro-bar-track{
+  flex:1;height:10px;
+  background:var(--border);border-radius:10px;overflow:hidden;
+}
+.macro-bar-fill{
+  height:100%;border-radius:10px;
+  transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);
+}
+.macro-val{width:70px;text-align:right;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;}
+
+/* Insight box */
+.insight{
+  background:var(--green-light);
+  border:1px solid #b7e4c7;
+  border-radius:4px;
+  padding:1rem 1.2rem;
+  font-size:0.82rem;
+  line-height:1.7;
+  color:#1b4332;
+}
+.insight.warn{background:var(--orange-light);border-color:#f4c1b4;color:#7d2d1e;}
+.insight strong{font-weight:600;}
+
+/* Water/sleep section */
+.daily-row{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  padding:1rem 0;
+  border-bottom:1px solid var(--border);
+}
+.daily-row:last-child{border-bottom:none;}
+.daily-icon{font-size:1.5rem;width:2.5rem;text-align:center;}
+.daily-body{flex:1;}
+.daily-title{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;}
+.daily-sub{font-size:0.75rem;color:var(--muted);margin-top:0.15rem;line-height:1.5;}
+.daily-val{
+  font-family:'Syne',sans-serif;
+  font-size:1.4rem;
+  font-weight:800;
+  color:var(--green);
+  white-space:nowrap;
+}
+
+/* Divider */
+.section-divider{
+  font-size:0.6rem;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin:1.5rem 0 1rem;
+  display:flex;
+  align-items:center;
+  gap:0.8rem;
+}
+.section-divider::before,.section-divider::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+</style>
 </head>
 <body>
-    <h>Calculator 01 </h>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand">Body<span>Fuel</span></div>
+      <div class="tagline">Health & Fitness Dashboard for Professionals</div>
+    </div>
+    <div class="badge">Science-backed</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('bmi')">BMI + Body</button>
+    <button class="tab-btn" onclick="switchTab('calories')">Calories & TDEE</button>
+    <button class="tab-btn" onclick="switchTab('macros')">Macros</button>
+    <button class="tab-btn" onclick="switchTab('daily')">Daily Needs</button>
+  </div>
+
+  <!-- ===== BMI PANEL ===== -->
+  <div class="panel active" id="panel-bmi">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Body Mass & Composition</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Height (cm)</label>
+          <input type="number" id="bmi-height" placeholder="e.g. 170" min="100" max="250"/>
+        </div>
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input type="number" id="bmi-weight" placeholder="e.g. 70" min="30" max="300"/>
+        </div>
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="bmi-age" placeholder="e.g. 30" min="15" max="100"/>
+        </div>
+        <div class="field">
+          <label>Sex</label>
+          <div class="pills" id="bmi-sex">
+            <button class="pill active" data-val="male">Male</button>
+            <button class="pill" data-val="female">Female</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Waist circumference (cm) <span style="color:var(--muted);font-size:0.7em">optional</span></label>
+          <input type="number" id="bmi-waist" placeholder="e.g. 80" min="40" max="200"/>
+        </div>
+        <div class="field">
+          <label>Hip circumference (cm) <span style="color:var(--muted);font-size:0.7em">optional</span></label>
+          <input type="number" id="bmi-hip" placeholder="e.g. 95" min="40" max="200"/>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcBMI()">Calculate →</button>
+    </div>
+
+    <div class="results" id="bmi-results">
+      <div class="result-grid">
+        <div class="result-box green">
+          <div class="rb-label">BMI</div>
+          <div class="rb-val" id="r-bmi">—</div>
+          <div class="rb-unit" id="r-bmi-cat">—</div>
+        </div>
+        <div class="result-box orange">
+          <div class="rb-label">Ideal Weight Range</div>
+          <div class="rb-val" id="r-ideal">—</div>
+          <div class="rb-unit">kg (BMI 18.5–24.9)</div>
+        </div>
+        <div class="result-box blue">
+          <div class="rb-label">Body Fat Est.</div>
+          <div class="rb-val" id="r-bf">—</div>
+          <div class="rb-unit" id="r-bf-cat">Deurenberg formula</div>
+        </div>
+        <div class="result-box yellow">
+          <div class="rb-label">WHR Ratio</div>
+          <div class="rb-val" id="r-whr">—</div>
+          <div class="rb-unit" id="r-whr-risk">waist/hip</div>
+        </div>
+      </div>
+      <div class="bmi-bar-wrap">
+        <div class="bmi-bar-track">
+          <div class="bmi-needle" id="bmi-needle" style="left:0%"></div>
+        </div>
+        <div class="bmi-labels">
+          <span>Under</span><span>Normal</span><span>Overweight</span><span>Obese</span>
+        </div>
+      </div>
+      <div style="margin-top:1rem;" id="bmi-insight"></div>
+    </div>
+  </div>
+
+  <!-- ===== CALORIES PANEL ===== -->
+  <div class="panel" id="panel-calories">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Calorie & Energy Needs</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input type="number" id="cal-weight" placeholder="70"/>
+        </div>
+        <div class="field">
+          <label>Height (cm)</label>
+          <input type="number" id="cal-height" placeholder="170"/>
+        </div>
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="cal-age" placeholder="30"/>
+        </div>
+      </div>
+      <div style="margin:1.2rem 0 0.5rem;">
+        <div class="field">
+          <label>Sex</label>
+          <div class="pills" id="cal-sex">
+            <button class="pill active" data-val="male">Male</button>
+            <button class="pill" data-val="female">Female</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-divider">Activity Level</div>
+      <div class="pills" id="cal-activity" style="flex-wrap:wrap;gap:0.5rem;">
+        <button class="pill active" data-val="1.2">Sedentary<br><small style="font-size:0.65em;opacity:0.6">desk job</small></button>
+        <button class="pill" data-val="1.375">Light<br><small style="font-size:0.65em;opacity:0.6">1–3x/week</small></button>
+        <button class="pill" data-val="1.55">Moderate<br><small style="font-size:0.65em;opacity:0.6">3–5x/week</small></button>
+        <button class="pill" data-val="1.725">Active<br><small style="font-size:0.65em;opacity:0.6">6–7x/week</small></button>
+        <button class="pill" data-val="1.9">Very Active<br><small style="font-size:0.65em;opacity:0.6">physical job</small></button>
+      </div>
+      <div class="section-divider">Goal</div>
+      <div class="pills" id="cal-goal">
+        <button class="pill" data-val="-500">Lose Fat</button>
+        <button class="pill active" data-val="0">Maintain</button>
+        <button class="pill" data-val="300">Build Muscle</button>
+      </div>
+      <button class="calc-btn" style="background:var(--orange);" onclick="calcCalories()">Calculate →</button>
+    </div>
+
+    <div class="results" id="cal-results">
+      <div class="result-grid">
+        <div class="result-box green">
+          <div class="rb-label">BMR</div>
+          <div class="rb-val" id="r-bmr">—</div>
+          <div class="rb-unit">kcal / day (at rest)</div>
+        </div>
+        <div class="result-box orange">
+          <div class="rb-label">TDEE</div>
+          <div class="rb-val" id="r-tdee">—</div>
+          <div class="rb-unit">kcal / day (maintenance)</div>
+        </div>
+        <div class="result-box blue">
+          <div class="rb-label">Target Calories</div>
+          <div class="rb-val" id="r-target">—</div>
+          <div class="rb-unit" id="r-target-label">for your goal</div>
+        </div>
+        <div class="result-box yellow">
+          <div class="rb-label">Weekly Change</div>
+          <div class="rb-val" id="r-weekly">—</div>
+          <div class="rb-unit">kg/week projection</div>
+        </div>
+      </div>
+      <div id="cal-insight"></div>
+    </div>
+  </div>
+
+  <!-- ===== MACROS PANEL ===== -->
+  <div class="panel" id="panel-macros">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Macro Nutrient Breakdown</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Your Daily Calories (kcal)</label>
+          <input type="number" id="mac-calories" placeholder="e.g. 2000"/>
+        </div>
+        <div class="field">
+          <label>Body Weight (kg)</label>
+          <input type="number" id="mac-weight" placeholder="e.g. 70"/>
+        </div>
+      </div>
+      <div class="section-divider">Goal / Lifestyle</div>
+      <div class="pills" id="mac-goal">
+        <button class="pill active" data-val="maintain">Maintenance</button>
+        <button class="pill" data-val="cut">Fat Loss</button>
+        <button class="pill" data-val="bulk">Muscle Gain</button>
+        <button class="pill" data-val="keto">Keto / Low Carb</button>
+        <button class="pill" data-val="sport">Athletic Performance</button>
+      </div>
+      <button class="calc-btn" style="background:var(--blue);" onclick="calcMacros()">Calculate →</button>
+    </div>
+
+    <div class="results" id="mac-results">
+      <div class="result-grid">
+        <div class="result-box green">
+          <div class="rb-label">Protein</div>
+          <div class="rb-val" id="r-protein">—</div>
+          <div class="rb-unit">grams / day</div>
+        </div>
+        <div class="result-box orange">
+          <div class="rb-label">Carbohydrates</div>
+          <div class="rb-val" id="r-carbs">—</div>
+          <div class="rb-unit">grams / day</div>
+        </div>
+        <div class="result-box blue">
+          <div class="rb-label">Fats</div>
+          <div class="rb-val" id="r-fats">—</div>
+          <div class="rb-unit">grams / day</div>
+        </div>
+        <div class="result-box yellow">
+          <div class="rb-label">Fiber</div>
+          <div class="rb-val" id="r-fiber">—</div>
+          <div class="rb-unit">grams / day</div>
+        </div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1.2rem;margin-bottom:1rem;">
+        <div class="macro-row">
+          <div class="macro-name">Protein</div>
+          <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-protein" style="background:#52b788;width:0%"></div></div>
+          <div class="macro-val" id="pct-protein" style="color:#52b788">—</div>
+        </div>
+        <div class="macro-row">
+          <div class="macro-name">Carbs</div>
+          <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-carbs" style="background:#e76f51;width:0%"></div></div>
+          <div class="macro-val" id="pct-carbs" style="color:#e76f51">—</div>
+        </div>
+        <div class="macro-row">
+          <div class="macro-name">Fats</div>
+          <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fats" style="background:#264653;width:0%"></div></div>
+          <div class="macro-val" id="pct-fats" style="color:#264653">—</div>
+        </div>
+      </div>
+      <div id="mac-insight"></div>
+    </div>
+  </div>
+
+  <!-- ===== DAILY NEEDS PANEL ===== -->
+  <div class="panel" id="panel-daily">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--yellow);"></span>Daily Essentials</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input type="number" id="dn-weight" placeholder="70"/>
+        </div>
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="dn-age" placeholder="30"/>
+        </div>
+        <div class="field">
+          <label>Activity</label>
+          <select id="dn-activity">
+            <option value="low">Low (desk job)</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="high">High (physical work)</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-divider">Climate</div>
+      <div class="pills" id="dn-climate">
+        <button class="pill active" data-val="temperate">Temperate</button>
+        <button class="pill" data-val="hot">Hot / Humid</button>
+        <button class="pill" data-val="cold">Cold / Dry</button>
+      </div>
+      <button class="calc-btn" style="background:#e9c46a;color:#1a1a1a;" onclick="calcDaily()">Calculate →</button>
+    </div>
+
+    <div class="results" id="dn-results">
+      <div class="card" style="padding:1.5rem 1.8rem;">
+        <div class="daily-row">
+          <div class="daily-icon">💧</div>
+          <div class="daily-body">
+            <div class="daily-title">Water Intake</div>
+            <div class="daily-sub" id="dn-water-note">Adjusted for activity and climate.</div>
+          </div>
+          <div class="daily-val" id="dn-water">—</div>
+        </div>
+        <div class="daily-row">
+          <div class="daily-icon">😴</div>
+          <div class="daily-body">
+            <div class="daily-title">Sleep Needed</div>
+            <div class="daily-sub" id="dn-sleep-note">Based on age and workload.</div>
+          </div>
+          <div class="daily-val" id="dn-sleep">—</div>
+        </div>
+        <div class="daily-row">
+          <div class="daily-icon">🪑</div>
+          <div class="daily-body">
+            <div class="daily-title">Max Sitting Time</div>
+            <div class="daily-sub">Stand/move every 45–60 min. Reduces metabolic risk.</div>
+          </div>
+          <div class="daily-val" id="dn-sit">6 hrs</div>
+        </div>
+        <div class="daily-row">
+          <div class="daily-icon">🚶</div>
+          <div class="daily-body">
+            <div class="daily-title">Daily Steps Goal</div>
+            <div class="daily-sub" id="dn-steps-note">For cardiovascular and metabolic health.</div>
+          </div>
+          <div class="daily-val" id="dn-steps">—</div>
+        </div>
+        <div class="daily-row">
+          <div class="daily-icon">🧂</div>
+          <div class="daily-body">
+            <div class="daily-title">Sodium Limit</div>
+            <div class="daily-sub">WHO guideline: below 2,000 mg/day for adults.</div>
+          </div>
+          <div class="daily-val" id="dn-sodium">—</div>
+        </div>
+        <div class="daily-row">
+          <div class="daily-icon">☕</div>
+          <div class="daily-body">
+            <div class="daily-title">Safe Caffeine</div>
+            <div class="daily-sub" id="dn-caff-note">Max before side effects (400mg/day limit).</div>
+          </div>
+          <div class="daily-val" id="dn-caff">—</div>
+        </div>
+      </div>
+      <div id="dn-insight"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ======== Utility ========
+function pill(groupId, multi=false){
+  const group = document.getElementById(groupId);
+  if(!group) return;
+  group.querySelectorAll('.pill').forEach(p=>{
+    p.addEventListener('click',()=>{
+      if(!multi){
+        group.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+      }
+      p.classList.toggle('active');
+    });
+  });
+}
+function getActivePill(groupId){
+  const group = document.getElementById(groupId);
+  const a = group && group.querySelector('.pill.active');
+  return a ? a.dataset.val : null;
+}
+function animNum(el, target, decimals=1){
+  const start = parseFloat(el.textContent)||0;
+  const dur=600, t0=performance.now();
+  function step(now){
+    const p=Math.min((now-t0)/dur,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=(start+(target-start)*ease).toFixed(decimals);
+    if(p<1) requestAnimationFrame(step);
+    else el.textContent=target.toFixed(decimals);
+  }
+  requestAnimationFrame(step);
+}
+function animInt(el,target){
+  const start=parseInt(el.textContent)||0;
+  const dur=600,t0=performance.now();
+  function step(now){
+    const p=Math.min((now-t0)/dur,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(start+(target-start)*ease).toLocaleString();
+    if(p<1) requestAnimationFrame(step);
+    else el.textContent=target.toLocaleString();
+  }
+  requestAnimationFrame(step);
+}
+function showResult(id){
+  const el=document.getElementById(id);
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+// Init pills
+['bmi-sex','cal-sex','cal-activity','cal-goal','mac-goal','dn-climate'].forEach(id=>pill(id));
+
+// ======== Tab Switching ========
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active', ['bmi','calories','macros','daily'][i]===name);
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ======== BMI ========
+function calcBMI(){
+  const h=parseFloat(document.getElementById('bmi-height').value);
+  const w=parseFloat(document.getElementById('bmi-weight').value);
+  const age=parseFloat(document.getElementById('bmi-age').value);
+  const sex=getActivePill('bmi-sex')||'male';
+  const waist=parseFloat(document.getElementById('bmi-waist').value)||null;
+  const hip=parseFloat(document.getElementById('bmi-hip').value)||null;
+  if(!h||!w||!age){alert('Please fill Height, Weight & Age.');return;}
+
+  const bmi=w/((h/100)**2);
+  const idealLow=(18.5*(h/100)**2), idealHigh=(24.9*(h/100)**2);
+  // Deurenberg body fat %
+  const bf=(1.20*bmi)+(0.23*age)-(10.8*(sex==='male'?1:0))-5.4;
+  // WHR
+  const whr=waist&&hip?(waist/hip):null;
+  let whrRisk='—';
+  if(whr){
+    if(sex==='male') whrRisk=whr<0.90?'Low risk':whr<1.0?'Moderate':' High risk';
+    else whrRisk=whr<0.80?'Low risk':whr<0.85?'Moderate':'High risk';
+  }
+
+  // Category
+  let cat,catColor;
+  if(bmi<18.5){cat='Underweight';catColor='#52b788';}
+  else if(bmi<25){cat='Normal weight';catColor='#52b788';}
+  else if(bmi<30){cat='Overweight';catColor='#e9c46a';}
+  else if(bmi<35){cat='Obese I';catColor='#e76f51';}
+  else{cat='Obese II+';catColor='#c1121f';}
+
+  // Needle position
+  const needlePct=Math.min(Math.max(((bmi-15)/25)*100,2),98);
+
+  document.getElementById('r-bmi').textContent='';
+  animNum(document.getElementById('r-bmi'),bmi,1);
+  document.getElementById('r-bmi-cat').textContent=cat;
+  document.getElementById('r-bmi-cat').style.color=catColor;
+  document.getElementById('r-ideal').textContent=`${idealLow.toFixed(0)}–${idealHigh.toFixed(0)}`;
+  document.getElementById('r-bf').textContent=bf>0?bf.toFixed(1)+'%':'N/A';
+  document.getElementById('r-whr').textContent=whr?whr.toFixed(2):'N/A';
+  document.getElementById('r-whr-risk').textContent=whrRisk;
+  setTimeout(()=>{document.getElementById('bmi-needle').style.left=needlePct+'%';},100);
+
+  // Insight
+  let ins='';
+  const diff=w-idealHigh;
+  if(bmi<18.5) ins=`<div class="insight warn">Your BMI suggests you may be <strong>underweight</strong>. Consider increasing calorie intake with nutrient-dense foods. Consult a doctor if unintentional.</div>`;
+  else if(bmi<25) ins=`<div class="insight">✅ Great news — your BMI is in the <strong>healthy range</strong>. Focus on maintaining with balanced nutrition and regular movement, even with a desk-based lifestyle.</div>`;
+  else if(bmi<30) ins=`<div class="insight warn">You're in the <strong>overweight</strong> range. As a busy professional, try 10-min walks after meals, reduce refined carbs, and aim for 7–8 hrs of sleep — all reduce metabolic risk.</div>`;
+  else ins=`<div class="insight warn">BMI indicates <strong>obesity</strong>. A 5–10% weight reduction can significantly improve metabolic health. Consider a structured plan with a dietitian.</div>`;
+  document.getElementById('bmi-insight').innerHTML=ins;
+
+  showResult('bmi-results');
+}
+
+// ======== Calories ========
+function calcCalories(){
+  const w=parseFloat(document.getElementById('cal-weight').value);
+  const h=parseFloat(document.getElementById('cal-height').value);
+  const age=parseFloat(document.getElementById('cal-age').value);
+  const sex=getActivePill('cal-sex')||'male';
+  const act=parseFloat(getActivePill('cal-activity')||1.2);
+  const goal=parseInt(getActivePill('cal-goal')||0);
+  if(!w||!h||!age){alert('Please fill all fields.');return;}
+
+  // Mifflin-St Jeor
+  const bmr=sex==='male'
+    ?(10*w)+(6.25*h)-(5*age)+5
+    :(10*w)+(6.25*h)-(5*age)-161;
+  const tdee=bmr*act;
+  const target=tdee+goal;
+  const weeklyKg=(goal/7700*7);
+
+  animInt(document.getElementById('r-bmr'),Math.round(bmr));
+  animInt(document.getElementById('r-tdee'),Math.round(tdee));
+  animInt(document.getElementById('r-target'),Math.round(target));
+
+  const wEl=document.getElementById('r-weekly');
+  if(goal===0){wEl.textContent='0.0 kg';}
+  else{wEl.textContent=(weeklyKg>0?'+':'')+weeklyKg.toFixed(2)+' kg';}
+
+  const goalLabel=goal<0?'fat loss target':goal>0?'muscle gain target':'maintenance calories';
+  document.getElementById('r-target-label').textContent=goalLabel;
+
+  let ins='';
+  if(goal<0) ins=`<div class="insight">🔥 A <strong>${Math.abs(goal)} kcal deficit</strong> projects ~${Math.abs(weeklyKg).toFixed(2)} kg lost/week. This is a safe, sustainable rate. Prioritise protein (≥1.6g/kg) to preserve muscle while cutting.</div>`;
+  else if(goal>0) ins=`<div class="insight">💪 A <strong>${goal} kcal surplus</strong> supports lean muscle gain. Keep surplus modest — excess leads to unwanted fat storage. Pair with progressive resistance training.</div>`;
+  else ins=`<div class="insight">✅ At <strong>${Math.round(tdee)} kcal</strong> you maintain current weight. Fluctuations of ±10% are normal and don't require adjustment.</div>`;
+  document.getElementById('cal-insight').innerHTML=ins;
+
+  showResult('cal-results');
+}
+
+// ======== Macros ========
+function calcMacros(){
+  const cals=parseFloat(document.getElementById('mac-calories').value);
+  const w=parseFloat(document.getElementById('mac-weight').value);
+  const goal=getActivePill('mac-goal')||'maintain';
+  if(!cals||!w){alert('Please fill calories and weight.');return;}
+
+  let proteinG, fatPct, carbPct;
+  const splits={
+    maintain:{p:0.30,f:0.30,c:0.40,pr:1.6},
+    cut:     {p:0.35,f:0.30,c:0.35,pr:2.2},
+    bulk:    {p:0.30,f:0.25,c:0.45,pr:1.8},
+    keto:    {p:0.25,f:0.70,c:0.05,pr:1.5},
+    sport:   {p:0.30,f:0.20,c:0.50,pr:2.0},
+  };
+  const s=splits[goal];
+  const protCals=cals*s.p, fatCals=cals*s.f, carbCals=cals*s.c;
+  proteinG=Math.round(protCals/4);
+  const fatsG=Math.round(fatCals/9);
+  const carbsG=Math.round(carbCals/4);
+  const fiberG=goal==='keto'?25:Math.round(cals/1000*14);
+
+  animInt(document.getElementById('r-protein'),proteinG);
+  animInt(document.getElementById('r-carbs'),carbsG);
+  animInt(document.getElementById('r-fats'),fatsG);
+  animInt(document.getElementById('r-fiber'),fiberG);
+
+  document.getElementById('pct-protein').textContent=Math.round(s.p*100)+'%';
+  document.getElementById('pct-carbs').textContent=Math.round(s.c*100)+'%';
+  document.getElementById('pct-fats').textContent=Math.round(s.f*100)+'%';
+  setTimeout(()=>{
+    document.getElementById('bar-protein').style.width=(s.p*100)+'%';
+    document.getElementById('bar-carbs').style.width=(s.c*100)+'%';
+    document.getElementById('bar-fats').style.width=(s.f*100)+'%';
+  },100);
+
+  const msgs={
+    maintain:'Balanced macros for a busy professional. Spread protein across 3–4 meals to maximise muscle protein synthesis.',
+    cut:`High protein (${Math.round(s.pr*w)}g target) preserves muscle during deficit. Reduce carbs around sedentary periods.`,
+    bulk:'Moderate surplus with ample carbs fuels training and recovery. Avoid excessive fat gain by keeping surplus controlled.',
+    keto:'Very low carb triggers ketosis. Expect a 2–4 week adaptation phase. Ensure electrolyte (sodium, potassium, magnesium) intake.',
+    sport:'High carb fuels performance. Time the majority of carbs around workouts. Protein supports repair and recovery.'
+  };
+  document.getElementById('mac-insight').innerHTML=`<div class="insight">📊 <strong>${goal.charAt(0).toUpperCase()+goal.slice(1)} split applied.</strong> ${msgs[goal]}</div>`;
+
+  showResult('mac-results');
+}
+
+// ======== Daily Needs ========
+function calcDaily(){
+  const w=parseFloat(document.getElementById('dn-weight').value);
+  const age=parseFloat(document.getElementById('dn-age').value);
+  const act=document.getElementById('dn-activity').value;
+  const climate=getActivePill('dn-climate')||'temperate';
+  if(!w||!age){alert('Please fill weight and age.');return;}
+
+  // Water: 35ml/kg base
+  let water=w*35;
+  if(act==='moderate') water+=500;
+  if(act==='high') water+=1000;
+  if(climate==='hot') water+=500;
+  if(climate==='cold') water-=200;
+  water=Math.max(water,1500);
+  const waterL=(water/1000).toFixed(1);
+
+  // Sleep by age
+  let sleepH;
+  if(age<26) sleepH='8–9 hrs';
+  else if(age<65) sleepH='7–9 hrs';
+  else sleepH='7–8 hrs';
+
+  // Steps
+  let steps;
+  if(act==='low') steps=8000;
+  else if(act==='moderate') steps=10000;
+  else steps=12000;
+
+  // Sodium
+  const sodium=act==='high'?'2,000–2,500 mg':'< 2,000 mg';
+
+  // Caffeine (safe max per kg with 400mg ceiling)
+  const caff=Math.min(Math.round(w*5.7),400)+' mg';
+  const cups=Math.round(Math.min(w*5.7,400)/95);
+
+  document.getElementById('dn-water').textContent=waterL+' L';
+  document.getElementById('dn-sleep').textContent=sleepH;
+  document.getElementById('dn-steps').textContent=steps.toLocaleString();
+  document.getElementById('dn-sodium').textContent=sodium;
+  document.getElementById('dn-caff').textContent=caff;
+  document.getElementById('dn-water-note').textContent=`Adjusted for ${act} activity and ${climate} climate. Includes food-sourced water (~20%).`;
+  document.getElementById('dn-caff-note').textContent=`≈ ${cups} cups of coffee. FDA safe limit is 400 mg/day.`;
+  document.getElementById('dn-steps-note').textContent=`${steps.toLocaleString()} steps/day for your activity level. Break into walks to offset desk time.`;
+
+  let insText='';
+  if(act==='low') insText=`<div class="insight warn">⚠️ <strong>Sedentary professionals</strong> face elevated cardiovascular and metabolic risk. Even 3×10-min walks daily can cut all-cause mortality risk by up to 11%. Set hourly movement reminders.</div>`;
+  else insText=`<div class="insight">✅ Your daily targets are set. Staying consistent with hydration, sleep, and movement will meaningfully reduce chronic disease risk over the long term.</div>`;
+  document.getElementById('dn-insight').innerHTML=insText;
+
+  showResult('dn-results');
+}
+</script>
 </body>
 </html>
